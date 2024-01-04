@@ -142,7 +142,7 @@ namespace EmproverAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("Date");
 
                     b.Property<int>("MaxValue")
                         .HasColumnType("int");
@@ -170,10 +170,10 @@ namespace EmproverAPI.Migrations
                         .HasColumnType("nvarchar(15)");
 
                     b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("Date");
 
                     b.Property<DateTime>("ValidTo")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("Date");
 
                     b.HasKey("Code");
 

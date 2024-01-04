@@ -12,6 +12,7 @@ namespace EmproverAPI
 
             // Add services to the container.
             builder.Services.AddDbContext<UserContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("DbCon")));
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

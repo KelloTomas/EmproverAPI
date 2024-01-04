@@ -1,4 +1,6 @@
-﻿using EmproverAPI.Models;
+﻿using AutoMapper;
+
+using EmproverAPI.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +13,12 @@ namespace EmproverAPI.Controllers
     public class Market_ChartController : Controller
     {
         private readonly UserContext _context;
+        private readonly IMapper _mapper;
 
-        public Market_ChartController(UserContext userContext)
+        public Market_ChartController(UserContext userContext, IMapper mapper)
         {
             _context = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -45,7 +49,7 @@ namespace EmproverAPI.Controllers
         }
 
         [HttpPost("symbolCode")]
-        public async Task<ActionResult> AddData(string symbolCode, [FromBody] List<DayStatisticsDto> data)
+        public async Task<ActionResult> AddData(string symbolCode, [FromBody] List<DayStatisticsDto> dayStatisticsDto)
         {
             var symbol = await _context.Symbols
                                 .Include(s => s.DayStatistics)
@@ -57,24 +61,9 @@ namespace EmproverAPI.Controllers
                 return NotFound($"Symbol with code {symbolCode} not found.");
             }
 
-            foreach (var dayStatisticsDto in data)
-            {
-                var dayStatistics = new DayStatistics
-                {
-                    Kapitalizacia = dayStatisticsDto.Kapitalizacia,
-                    BuySellVolume = dayStatisticsDto.BuySellVolume,
-                    Point = new Point
-                    {
-                        DateTime = dayStatisticsDto.Point.DateTime,
-                        OpenValue = dayStatisticsDto.Point.OpenValue,
-                        CloseValue = dayStatisticsDto.Point.CloseValue,
-                        MinValue = dayStatisticsDto.Point.MinValue,
-                        MaxValue = dayStatisticsDto.Point.MaxValue
-                    }
-                };
+            var dayStatistics = _mapper.Map<IEnumerable<DayStatistics>>(dayStatisticsDto);
 
-                symbol.DayStatistics.Add(dayStatistics);
-            }
+            symbol.DayStatistics.AddRange(dayStatistics);
 
             await _context.SaveChangesAsync();
 
