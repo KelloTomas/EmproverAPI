@@ -21,27 +21,31 @@ namespace EmproverAPI.Models
         public DbSet<IndicatorParameter> IndicatorParameter { get; set; }
         public DbSet<AllowedValues> AllowedValues { get; set; }
     }
+    [PrimaryKey(nameof(Id), nameof(DateTime))]
     public class Point
     {
-        [Key]
         public int Id { get; set; }
-        [DataType(DataType.Date)]
-        [Column(TypeName = "Date")]
+        [Column(TypeName = "Date"), DataType(DataType.Date)]
         public DateTime DateTime { get; set; }
         public int OpenValue { get; set; }
         public int CloseValue { get; set; }
         public int MinValue { get; set; }
         public int MaxValue { get; set; }
     }
-    public class PointDto
+    public class PointDto : IValidDto
     {
-        [DataType(DataType.Date)]
-        [Column(TypeName = "Date")]
         public DateTime DateTime { get; set; }
         public int OpenValue { get; set; }
         public int CloseValue { get; set; }
         public int MinValue { get; set; }
         public int MaxValue { get; set; }
+
+        public string IsValid()
+        {
+            return MinValue > MaxValue
+                ? $"MinValue {MinValue} must be less then {MaxValue}"
+                : string.Empty;
+        }
     }
 
     public class Symbol
@@ -51,13 +55,46 @@ namespace EmproverAPI.Models
         public string Code { get; set; } = string.Empty;
         [StringLength(15)]
         public string Name { get; set; } = string.Empty; // can be EUR/USD, Gold, Silver, Cupprum
-        [DataType(DataType.Date)]
-        [Column(TypeName = "Date")]
+        [DataType(DataType.Date), Column(TypeName = "Date")]
         public DateTime ValidFrom { get; set; }
-        [DataType(DataType.Date)]
-        [Column(TypeName = "Date")]
+        [DataType(DataType.Date), Column(TypeName = "Date")]
         public DateTime ValidTo { get; set; }
         public List<DayStatistics> DayStatistics { get; set; }
+    }
+
+    public interface IValidDto
+    {
+        string IsValid();
+    }
+
+    public class SymbolDto : IValidDto
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty; // can be EUR/USD, Gold, Silver, Cupprum
+        public DateTime ValidFrom { get; set; }
+        public DateTime ValidTo { get; set; }
+        public List<DayStatisticsDto> DayStatistics { get; set; } = new List<DayStatisticsDto>();
+
+        public string IsValid()
+        {
+            string errorMsg = string.Empty;
+            int StringLength = 15; // ToDo make as constant
+            if (Code.Length > StringLength)
+            {
+                errorMsg += $"Max Code lenght is {StringLength} but get {Code.Length}; ";
+            }
+            if (Name.Length > StringLength)
+            {
+                errorMsg += $"Max Name lenght is {StringLength} but get {Name.Length}; ";
+            }
+            if (ValidFrom > ValidTo)
+            {
+                errorMsg += $"ValidFrom {ValidFrom} is more then ValidTo {ValidTo}; ";
+            }
+            errorMsg += DayStatistics.Select(d => d.IsValid());
+
+            return errorMsg;
+        }
     }
 
     public class DayStatistics
@@ -74,11 +111,16 @@ namespace EmproverAPI.Models
         //public object? Obj5 { get; set; }
     }
 
-    public class DayStatisticsDto
+    public class DayStatisticsDto : IValidDto
     {
         public PointDto Point { get; set; } = new PointDto();
         public int Kapitalizacia { get; set; }
         public int BuySellVolume { get; set; }
+
+        public string IsValid()
+        {
+            return Point.IsValid();
+        }
     }
 
     public class User
@@ -95,9 +137,9 @@ namespace EmproverAPI.Models
 
     public enum UserPermissions
     {
-        Admin,
-        Trader,
-        User
+        Admin = 1,
+        Trader = 2,
+        User = 3
     }
 
     public class Indicator
@@ -145,12 +187,12 @@ namespace EmproverAPI.Models
 
     public enum ParameterType
     {
-        TypeInt,
-        TypeDecimal
+        TypeInt = 1,
+        TypeDecimal = 2
     }
     public enum IndicatorDisplayType
     {
-        Line,
-        Spot
+        Line = 1,
+        Spot = 2
     }
 }

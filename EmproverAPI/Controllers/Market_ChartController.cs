@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 
+using EFCore.BulkExtensions;
+
 using EmproverAPI.Models;
 
 using Microsoft.AspNetCore.Http;
@@ -41,9 +43,43 @@ namespace EmproverAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult AddSymbol([FromBody] Symbol symbol)
+        public ActionResult AddSymbol([FromBody] SymbolDto symbolDto)
         {
+            if (symbolDto == null)
+            {
+                return NotFound($"Symbol not provided.");
+            }
+
+            string errMsg = symbolDto.IsValid();
+            if (!string.IsNullOrWhiteSpace(errMsg))
+            {
+                return ValidationProblem(errMsg);
+            }
+
+            var symbol = _mapper.Map<Symbol>(symbolDto);
+
             _context.Symbols.Add(symbol);
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        [HttpPost]
+        public ActionResult AddSymbols([FromBody] List<SymbolDto> symbolsDto)
+        {
+            if (symbolsDto == null || symbolsDto.Count == 0)
+            {
+                return NotFound($"Symbol not provided.");
+            }
+
+            string errMsg = string.Join(';', symbolsDto.Select(s => s.IsValid()));
+            if (!string.IsNullOrWhiteSpace(errMsg))
+            {
+                return ValidationProblem(errMsg);
+            }
+
+            var symbols = _mapper.Map<IEnumerable<Symbol>>(symbolsDto);
+
+            _context.BulkInsert(symbols);
             _context.SaveChanges();
             return Ok();
         }
