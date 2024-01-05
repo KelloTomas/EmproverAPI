@@ -3,7 +3,9 @@
 using EFCore.BulkExtensions;
 
 using EmproverAPI.Models;
-
+using EmproverAPI.Models.DB;
+using EmproverAPI.Models.Dto;
+using EmproverAPI.Models.Enum;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +34,7 @@ namespace EmproverAPI.Controllers
         [HttpGet]
         public ActionResult GetAdmin()
         {
-            return Ok(_context.Users.Where(u => u.Permissions == UserPermissions.Admin));
+            return Ok(_context.Users.Where(u => u.Permissions == UserPermissionsEnum.Admin));
         }
 
         [HttpPost]
