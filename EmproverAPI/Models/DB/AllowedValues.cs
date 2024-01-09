@@ -9,6 +9,7 @@ namespace EmproverAPI.Models.DB
     {
         [Key]
         public int Key { get; set; }
+
         [Column(TypeName = "decimal(18, 2)")]
         public decimal? Value { get; set; }
     }

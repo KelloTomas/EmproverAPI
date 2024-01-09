@@ -1,20 +1,41 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Text.Json.Serialization;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace EmproverAPI.Models.DB
 {
-    [PrimaryKey(nameof(Id), nameof(DateTime))]
+    [PrimaryKey(nameof(DayStatisticsSymbolCode), nameof(DayStatisticsDateTime), nameof(Time))]
     public class Point
     {
-        public int Id { get; set; }
-        [Column(TypeName = "Date"), DataType(DataType.Date)]
-        public DateTime DateTime { get; set; }
+        private DayStatistics _dayStatistics;
+
+        public DateTime Time { get; set; }
+
         public int OpenValue { get; set; }
+
         public int CloseValue { get; set; }
+
         public int MinValue { get; set; }
+
         public int MaxValue { get; set; }
+
+        // Foreign key
+        [JsonIgnore]
+        public string DayStatisticsSymbolCode { get; set; }
+
+        [JsonIgnore]
+        public DateTime DayStatisticsDateTime { get; set; }
+
+        [JsonIgnore]
+        public DayStatistics DayStatistics
+        {
+            get => _dayStatistics;
+            set
+            {
+                DayStatisticsSymbolCode = value.SymbolCode;
+                DayStatisticsDateTime = value.DateTime;
+                _dayStatistics = value;
+            }
+        }
     }
 }
